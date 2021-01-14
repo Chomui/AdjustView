@@ -24,45 +24,49 @@ class AdjustScrollView @JvmOverloads constructor(
 
     private var currentOffsetX = 0F
 
+    private var alphaOffset = 35
+
     private var columnsAmount = 25
 
-    private var columnsOffset = 75
+    private var columnsOffset = 75F
 
     private var columnsColor = Color.GRAY
 
-    private var columnsWidth = 5
+    private var columnsWidth = 5F
 
     private var maxLeftOffset = 0F
     private var maxRightOffset = 0F
 
     private var onScrollCallback: OnScrollCallback? = null
 
-    private var percent: Float = 0F
+    private var progress: Float = 0F
 
     init {
         attrs?.let(::initAttrs)
 
         calculateMaxOffsets()
+
+        paintTube.color = columnsColor
     }
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
-        val percentInt = percent.toInt()
-        val absPercent = abs(percentInt)
+        val progressInt = progress.toInt()
+        val absProgress = abs(progressInt)
 
         for (i in 0..columnsAmount) {
             val absI = abs(i)
 
-            var currentAlpha = 255 - abs(absPercent + i - absPercent * 2) * 50
+            var currentAlpha = 255 - abs(absProgress + i - absProgress * 2) * alphaOffset
 
             paintTube.alpha = currentAlpha
 
-            if (percentInt < 0 && i != 0) {
-                val alpha: Int = if (absI < absPercent) {
-                    paintTube.alpha - (absPercent * absI - absI) * 50
+            if (progressInt < 0 && i != 0) {
+                val alpha: Int = if (absI < absProgress) {
+                    paintTube.alpha - (absProgress * absI - absI) * alphaOffset
                 } else {
-                    paintTube.alpha - (absPercent * 50 * 2)
+                    paintTube.alpha - (absProgress * alphaOffset * 2)
                 }
                 if (alpha < 0) {
                     paintTube.alpha = 0
@@ -78,13 +82,13 @@ class AdjustScrollView @JvmOverloads constructor(
                     paintTube
             )
 
-            if (percentInt < 0 && i != 0) {
+            if (progressInt < 0 && i != 0) {
                 paintTube.alpha = currentAlpha
-            } else if (percentInt > 0 && i != 0) {
-                val alpha: Int = if (absI < absPercent) {
-                    paintTube.alpha - (absPercent * absI - absI) * 50
+            } else if (progressInt > 0 && i != 0) {
+                val alpha: Int = if (absI < absProgress) {
+                    paintTube.alpha - (absProgress * absI - absI) * alphaOffset
                 } else {
-                    paintTube.alpha - (absPercent * 50 * 2)
+                    paintTube.alpha - (absProgress * alphaOffset * 2)
                 }
                 if (alpha < 0) {
                     paintTube.alpha = 0
@@ -102,6 +106,54 @@ class AdjustScrollView @JvmOverloads constructor(
         }
     }
 
+    fun setProgress(progress: Float) {
+        if (this.progress != progress) {
+            this.progress = progress
+            currentOffsetX = 0F
+            invalidate()
+        }
+    }
+
+    fun setColumnsAmount(amount: Int) {
+        if (this.columnsAmount != amount) {
+            this.columnsAmount = amount
+            calculateMaxOffsets()
+            setProgress(0F)
+        }
+    }
+
+    fun setColumnsOffset(offset: Float) {
+        if (this.columnsOffset != offset) {
+            this.columnsOffset = offset
+            calculateMaxOffsets()
+            setProgress(0F)
+        }
+    }
+
+    fun setColumnsColor(color: Int) {
+        if (this.columnsColor != color) {
+            this.columnsColor = color
+            paintTube.color = color
+            invalidate()
+        }
+    }
+
+    fun setColumnsWidth(width: Float) {
+        if (this.columnsWidth != width) {
+            this.columnsWidth = width
+            calculateMaxOffsets()
+            setProgress(0F)
+        }
+    }
+
+    fun setOnScrollCallback(callback: OnScrollCallback) {
+        this.onScrollCallback = callback
+    }
+
+    interface OnScrollCallback {
+        fun onScroll(percent: Float)
+    }
+
     private val gestureDetector = GestureDetector(context, object : GestureDetector.SimpleOnGestureListener() {
         override fun onDown(e: MotionEvent?): Boolean {
             return true
@@ -117,8 +169,8 @@ class AdjustScrollView @JvmOverloads constructor(
                 currentOffsetX = maxRightOffset
             }
 
-            percent = currentOffsetX / maxLeftOffset * columnsAmount
-            onScrollCallback?.onScroll(percent)
+            progress = currentOffsetX / maxLeftOffset * columnsAmount
+            onScrollCallback?.onScroll(progress)
             invalidate()
             return true
         }
@@ -138,18 +190,10 @@ class AdjustScrollView @JvmOverloads constructor(
         val typedArray = context.obtainStyledAttributes(attrs, R.styleable.AdjustScrollView)
 
         columnsAmount = typedArray.getInteger(R.styleable.AdjustScrollView_asv_columns_amount, columnsAmount)
-        columnsOffset = typedArray.getDimensionPixelSize(R.styleable.AdjustScrollView_asv_columns_offset, columnsOffset)
+        columnsOffset = typedArray.getDimension(R.styleable.AdjustScrollView_asv_columns_offset, columnsOffset)
         columnsColor = typedArray.getColor(R.styleable.AdjustScrollView_asv_columns_color, columnsColor)
-        columnsWidth = typedArray.getDimensionPixelSize(R.styleable.AdjustScrollView_asv_columns_width, columnsWidth)
+        columnsWidth = typedArray.getDimension(R.styleable.AdjustScrollView_asv_columns_width, columnsWidth)
 
         typedArray.recycle()
-    }
-
-    fun setOnScrollCallback(callback: OnScrollCallback) {
-        this.onScrollCallback = callback
-    }
-
-    interface OnScrollCallback {
-        fun onScroll(percent: Float)
     }
 }
