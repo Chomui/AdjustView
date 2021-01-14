@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="AdjustScrollView">
+        <attr name="asv_columns_amount" format="reference|integer" />
+        <attr name="asv_columns_offset" format="reference|dimension" />
+        <attr name="asv_columns_color" format="reference|color" />
+        <attr name="asv_columns_width" format="reference|dimension" />
+    </declare-styleable>
+</resources>
