@@ -63,16 +63,7 @@ class AdjustScrollView @JvmOverloads constructor(
             paintTube.alpha = currentAlpha
 
             if (progressInt < 0 && i != 0) {
-                val alpha: Int = if (absI < absProgress) {
-                    paintTube.alpha - (absProgress * absI - absI) * alphaOffset
-                } else {
-                    paintTube.alpha - (absProgress * alphaOffset * 2)
-                }
-                if (alpha < 0) {
-                    paintTube.alpha = 0
-                } else {
-                    paintTube.alpha = alpha
-                }
+                calculateColumnsAlpha(absI, absProgress)
             }
             canvas.drawRect(
                     width / 2F + (i * (columnsOffset + columnsWidth)) - (columnsWidth / 2) + currentOffsetX,
@@ -85,16 +76,7 @@ class AdjustScrollView @JvmOverloads constructor(
             if (progressInt < 0 && i != 0) {
                 paintTube.alpha = currentAlpha
             } else if (progressInt > 0 && i != 0) {
-                val alpha: Int = if (absI < absProgress) {
-                    paintTube.alpha - (absProgress * absI - absI) * alphaOffset
-                } else {
-                    paintTube.alpha - (absProgress * alphaOffset * 2)
-                }
-                if (alpha < 0) {
-                    paintTube.alpha = 0
-                } else {
-                    paintTube.alpha = alpha
-                }
+                calculateColumnsAlpha(absI, absProgress)
             }
             canvas.drawRect(
                     width / 2F + (-i * (columnsOffset + columnsWidth)) - (columnsWidth / 2) + currentOffsetX,
@@ -103,6 +85,19 @@ class AdjustScrollView @JvmOverloads constructor(
                     height.toFloat(),
                     paintTube
             )
+        }
+    }
+
+    private fun calculateColumnsAlpha(absI: Int, absProgress: Int) {
+        val alpha: Int = if (absI < absProgress) {
+            paintTube.alpha - (absProgress * absI - absI) * alphaOffset
+        } else {
+            paintTube.alpha - (absProgress * alphaOffset * 2)
+        }
+        if (alpha < 0) {
+            paintTube.alpha = 0
+        } else {
+            paintTube.alpha = alpha
         }
     }
 
