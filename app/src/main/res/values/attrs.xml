@@ -5,5 +5,7 @@
         <attr name="asv_columns_offset" format="reference|dimension" />
         <attr name="asv_columns_color" format="reference|color" />
         <attr name="asv_columns_width" format="reference|dimension" />
+        <attr name="asv_dot_color" format="reference|color" />
+        <attr name="asv_dot_radius" format="reference|dimension" />
     </declare-styleable>
 </resources>

@@ -17,11 +17,6 @@ class AdjustScrollView @JvmOverloads constructor(
         defStyle: Int = 0
 ) : View(context, attrs, defStyle) {
 
-    private val paintTube = Paint().apply {
-        isAntiAlias = true
-        color = Color.BLACK
-    }
-
     private var currentOffsetX = 0F
 
     private var alphaOffset = 35
@@ -31,8 +26,20 @@ class AdjustScrollView @JvmOverloads constructor(
     private var columnsOffset = 75F
 
     private var columnsColor = Color.GRAY
+    private var dotColor = Color.GRAY
+
+    private val columnsPaint = Paint().apply {
+        isAntiAlias = true
+        color = columnsColor
+    }
+
+    private val dotPaint = Paint().apply {
+        isAntiAlias = true
+        color = dotColor
+    }
 
     private var columnsWidth = 5F
+    private var dotRadius = 5F
 
     private var maxLeftOffset = 0F
     private var maxRightOffset = 0F
@@ -46,12 +53,18 @@ class AdjustScrollView @JvmOverloads constructor(
 
         calculateMaxOffsets()
 
-        paintTube.color = columnsColor
+        columnsPaint.color = columnsColor
     }
 
-    override fun onDraw(canvas: Canvas) {
+    override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
 
+        if (canvas == null) return
+
+        // dot
+        canvas.drawCircle(width / 2F, dotRadius, dotRadius, dotPaint)
+
+        // columns
         val progressInt = progress.toInt()
         val absProgress = abs(progressInt)
 
@@ -60,44 +73,44 @@ class AdjustScrollView @JvmOverloads constructor(
 
             var currentAlpha = 255 - abs(absProgress + i - absProgress * 2) * alphaOffset
 
-            paintTube.alpha = currentAlpha
+            columnsPaint.alpha = currentAlpha
 
             if (progressInt < 0 && i != 0) {
                 calculateColumnsAlpha(absI, absProgress)
             }
             canvas.drawRect(
                     width / 2F + (i * (columnsOffset + columnsWidth)) - (columnsWidth / 2) + currentOffsetX,
-                    height / 2F,
+                    height / 3F,
                     width / 2F + (i * (columnsOffset + columnsWidth)) + (columnsWidth / 2) + currentOffsetX,
                     height.toFloat(),
-                    paintTube
+                    columnsPaint
             )
 
             if (progressInt < 0 && i != 0) {
-                paintTube.alpha = currentAlpha
+                columnsPaint.alpha = currentAlpha
             } else if (progressInt > 0 && i != 0) {
                 calculateColumnsAlpha(absI, absProgress)
             }
             canvas.drawRect(
                     width / 2F + (-i * (columnsOffset + columnsWidth)) - (columnsWidth / 2) + currentOffsetX,
-                    height / 2F,
+                    height / 3F,
                     width / 2F + (-i * (columnsOffset + columnsWidth)) + (columnsWidth / 2) + currentOffsetX,
                     height.toFloat(),
-                    paintTube
+                    columnsPaint
             )
         }
     }
 
     private fun calculateColumnsAlpha(absI: Int, absProgress: Int) {
         val alpha: Int = if (absI < absProgress) {
-            paintTube.alpha - (absProgress * absI - absI) * alphaOffset
+            columnsPaint.alpha - (absProgress * absI - absI) * alphaOffset
         } else {
-            paintTube.alpha - (absProgress * alphaOffset * 2)
+            columnsPaint.alpha - (absProgress * alphaOffset * 2)
         }
         if (alpha < 0) {
-            paintTube.alpha = 0
+            columnsPaint.alpha = 0
         } else {
-            paintTube.alpha = alpha
+            columnsPaint.alpha = alpha
         }
     }
 
@@ -128,7 +141,15 @@ class AdjustScrollView @JvmOverloads constructor(
     fun setColumnsColor(color: Int) {
         if (this.columnsColor != color) {
             this.columnsColor = color
-            paintTube.color = color
+            columnsPaint.color = color
+            invalidate()
+        }
+    }
+
+    fun setDotColor(color: Int) {
+        if (this.dotColor != color) {
+            this.dotColor = color
+            dotPaint.color = color
             invalidate()
         }
     }
@@ -138,6 +159,13 @@ class AdjustScrollView @JvmOverloads constructor(
             this.columnsWidth = width
             calculateMaxOffsets()
             setProgress(0F)
+        }
+    }
+
+    fun setDotRadius(radius: Float) {
+        if (this.dotRadius != radius) {
+            this.dotRadius = radius
+            invalidate()
         }
     }
 
@@ -187,7 +215,9 @@ class AdjustScrollView @JvmOverloads constructor(
         columnsAmount = typedArray.getInteger(R.styleable.AdjustScrollView_asv_columns_amount, columnsAmount)
         columnsOffset = typedArray.getDimension(R.styleable.AdjustScrollView_asv_columns_offset, columnsOffset)
         columnsColor = typedArray.getColor(R.styleable.AdjustScrollView_asv_columns_color, columnsColor)
+        dotColor = typedArray.getColor(R.styleable.AdjustScrollView_asv_dot_color, dotColor)
         columnsWidth = typedArray.getDimension(R.styleable.AdjustScrollView_asv_columns_width, columnsWidth)
+        dotRadius = typedArray.getDimension(R.styleable.AdjustScrollView_asv_dot_radius, dotRadius)
 
         typedArray.recycle()
     }
