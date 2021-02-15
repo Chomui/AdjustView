@@ -21,7 +21,8 @@ class AdjustScrollView @JvmOverloads constructor(
 
     private var alphaOffset = 35
 
-    private var columnsAmount = 25
+    var columnsAmount = 25
+        private set
 
     private var columnsOffset = 75F
 
@@ -117,7 +118,7 @@ class AdjustScrollView @JvmOverloads constructor(
     fun setProgress(progress: Float) {
         if (this.progress != progress) {
             this.progress = progress
-            currentOffsetX = 0F
+            currentOffsetX = progress / columnsAmount * maxLeftOffset
             invalidate()
         }
     }
@@ -177,30 +178,37 @@ class AdjustScrollView @JvmOverloads constructor(
         fun onScroll(percent: Float)
     }
 
-    private val gestureDetector = GestureDetector(context, object : GestureDetector.SimpleOnGestureListener() {
-        override fun onDown(e: MotionEvent?): Boolean {
-            return true
-        }
+    private val gestureDetector =
+            GestureDetector(context, object : GestureDetector.SimpleOnGestureListener() {
+                override fun onDown(e: MotionEvent?): Boolean {
+                    return true
+                }
 
-        override fun onScroll(e1: MotionEvent?, e2: MotionEvent?, distanceX: Float, distanceY: Float): Boolean {
-            if (currentOffsetX in maxLeftOffset..maxRightOffset) {
-                currentOffsetX -= distanceX
-            }
-            if (currentOffsetX < maxLeftOffset) {
-                currentOffsetX = maxLeftOffset
-            } else if (currentOffsetX > maxRightOffset) {
-                currentOffsetX = maxRightOffset
-            }
+                override fun onScroll(
+                        e1: MotionEvent?,
+                        e2: MotionEvent?,
+                        distanceX: Float,
+                        distanceY: Float
+                ): Boolean {
+                    if (currentOffsetX in maxLeftOffset..maxRightOffset) {
+                        currentOffsetX -= distanceX
+                    }
+                    if (currentOffsetX < maxLeftOffset) {
+                        currentOffsetX = maxLeftOffset
+                    } else if (currentOffsetX > maxRightOffset) {
+                        currentOffsetX = maxRightOffset
+                    }
 
-            progress = currentOffsetX / maxLeftOffset * columnsAmount
-            onScrollCallback?.onScroll(progress)
-            invalidate()
-            return true
-        }
-    })
+                    progress = currentOffsetX / maxLeftOffset * columnsAmount
+                    onScrollCallback?.onScroll(progress)
+                    invalidate()
+                    return true
+                }
+            })
 
     private fun calculateMaxOffsets() {
-        maxRightOffset = ((columnsAmount + 1) * (columnsOffset + columnsWidth)) + (columnsWidth / 2) - (columnsOffset + columnsWidth * 1.5F)
+        maxRightOffset =
+                ((columnsAmount + 1) * (columnsOffset + columnsWidth)) + (columnsWidth / 2) - (columnsOffset + columnsWidth * 1.5F)
         maxLeftOffset = -maxRightOffset
     }
 
@@ -212,11 +220,15 @@ class AdjustScrollView @JvmOverloads constructor(
     private fun initAttrs(attrs: AttributeSet) {
         val typedArray = context.obtainStyledAttributes(attrs, R.styleable.AdjustScrollView)
 
-        columnsAmount = typedArray.getInteger(R.styleable.AdjustScrollView_asv_columns_amount, columnsAmount)
-        columnsOffset = typedArray.getDimension(R.styleable.AdjustScrollView_asv_columns_offset, columnsOffset)
-        columnsColor = typedArray.getColor(R.styleable.AdjustScrollView_asv_columns_color, columnsColor)
+        columnsAmount =
+                typedArray.getInteger(R.styleable.AdjustScrollView_asv_columns_amount, columnsAmount)
+        columnsOffset =
+                typedArray.getDimension(R.styleable.AdjustScrollView_asv_columns_offset, columnsOffset)
+        columnsColor =
+                typedArray.getColor(R.styleable.AdjustScrollView_asv_columns_color, columnsColor)
         dotColor = typedArray.getColor(R.styleable.AdjustScrollView_asv_dot_color, dotColor)
-        columnsWidth = typedArray.getDimension(R.styleable.AdjustScrollView_asv_columns_width, columnsWidth)
+        columnsWidth =
+                typedArray.getDimension(R.styleable.AdjustScrollView_asv_columns_width, columnsWidth)
         dotRadius = typedArray.getDimension(R.styleable.AdjustScrollView_asv_dot_radius, dotRadius)
 
         typedArray.recycle()
