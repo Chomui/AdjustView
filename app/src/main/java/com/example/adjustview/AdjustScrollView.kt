@@ -96,7 +96,15 @@ class AdjustScrollView @JvmOverloads constructor(
         if (position > width || position < 0) {
             columnsPaint.alpha = 0
         } else {
-            columnsPaint.alpha = 255 - abs(((width / 2) - abs(position).toInt())) / alphaOffset
+            var alpha = 255 - abs(((width / 2) - abs(position).toInt())) / alphaOffset
+
+            if (alpha > 255) {
+                alpha = 255
+            } else if (alpha < 0){
+                alpha = 0
+            }
+
+            columnsPaint.alpha = alpha
         }
     }
 
